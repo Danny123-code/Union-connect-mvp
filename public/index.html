@@ -1,0 +1,1342 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Union Connect - Vendor Operations Platform</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #1A1A1A;
+            --primary-light: #4A4A4A;
+            --primary-dark: #000000;
+            --accent: #534AB7;
+            --accent-light: #7F77DD;
+            --teal: #1D9E75;
+            --coral: #D85A30;
+            --blue: #378ADD;
+            --green: #639922;
+            --amber: #BA7517;
+            --red: #E24B4A;
+
+            --bg-primary: #FFFFFF;
+            --bg-secondary: #F9F8F6;
+            --bg-tertiary: #F1EFE8;
+            --text-primary: #1A1A1A;
+            --text-secondary: #6B6B6B;
+            --text-tertiary: #9A9A9A;
+            --border: rgba(0, 0, 0, 0.08);
+            --border-hover: rgba(0, 0, 0, 0.12);
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+            background: var(--bg-tertiary);
+            color: var(--text-primary);
+            line-height: 1.6;
+        }
+
+        .app {
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .sidebar {
+            width: 280px;
+            background: var(--bg-primary);
+            border-right: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .sidebar-header {
+            padding: 20px 16px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .logo-section {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 12px;
+        }
+
+        .logo-icon {
+            width: 36px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+        }
+
+        .logo-text {
+            display: flex;
+            flex-direction: column;
+            gap: 0px;
+        }
+
+        .logo-main {
+            font-size: 14px;
+            font-weight: 900;
+            letter-spacing: 2px;
+            color: var(--primary);
+        }
+
+        .logo-sub {
+            font-size: 11px;
+            font-weight: 600;
+            letter-spacing: 1px;
+            color: var(--text-tertiary);
+        }
+
+        .tagline {
+            font-size: 11px;
+            color: var(--text-tertiary);
+            font-weight: 500;
+            margin-bottom: 12px;
+        }
+
+        .industry-selector {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            font-size: 12px;
+            background: var(--bg-secondary);
+            cursor: pointer;
+        }
+
+        .industry-selector:focus {
+            outline: none;
+            border-color: var(--accent);
+            background: var(--bg-primary);
+        }
+
+        .sidebar-nav {
+            padding: 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .nav-item {
+            padding: 10px 12px;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: transparent;
+            border: none;
+            text-align: left;
+        }
+
+        .nav-item:hover {
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+        }
+
+        .nav-item.active {
+            background: var(--primary);
+            color: white;
+        }
+
+        .nav-item i {
+            font-size: 16px;
+        }
+
+        .sidebar-list {
+            flex: 1;
+            overflow-y: auto;
+            padding: 8px;
+        }
+
+        .list-section {
+            margin-bottom: 16px;
+        }
+
+        .list-header {
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--text-tertiary);
+            text-transform: uppercase;
+            padding: 8px 12px;
+        }
+
+        .list-item {
+            padding: 10px 12px;
+            border-radius: 6px;
+            color: var(--text-secondary);
+            cursor: pointer;
+            font-size: 13px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            transition: all 0.2s;
+            margin-bottom: 4px;
+        }
+
+        .list-item:hover {
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+        }
+
+        .list-item.active {
+            background: var(--bg-secondary);
+            color: var(--primary);
+            font-weight: 600;
+        }
+
+        .list-item-avatar {
+            width: 28px;
+            height: 28px;
+            border-radius: 4px;
+            background: linear-gradient(135deg, var(--accent), var(--accent-light));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 10px;
+            font-weight: 700;
+        }
+
+        .list-item-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .list-item-name {
+            font-size: 13px;
+            font-weight: 500;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .list-item-meta {
+            font-size: 11px;
+            color: var(--text-tertiary);
+        }
+
+        .badge {
+            background: var(--accent);
+            color: white;
+            font-size: 10px;
+            font-weight: 700;
+            padding: 2px 6px;
+            border-radius: 3px;
+            margin-left: auto;
+        }
+
+        .main {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .header {
+            background: var(--bg-primary);
+            border-bottom: 1px solid var(--border);
+            padding: 16px 24px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .header-title {
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .header-subtitle {
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 12px;
+        }
+
+        .btn-primary {
+            padding: 8px 16px;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .btn-primary:hover {
+            background: var(--primary-light);
+        }
+
+        .btn-secondary {
+            padding: 8px 16px;
+            background: transparent;
+            color: var(--text-secondary);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .btn-secondary:hover {
+            background: var(--bg-secondary);
+            border-color: var(--border-hover);
+        }
+
+        .content {
+            flex: 1;
+            display: flex;
+            overflow: hidden;
+        }
+
+        .dashboard {
+            flex: 1;
+            overflow-y: auto;
+            padding: 24px;
+        }
+
+        .view {
+            display: none;
+        }
+
+        .view.active {
+            display: block;
+        }
+
+        .section {
+            margin-bottom: 32px;
+        }
+
+        .section-title {
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--text-primary);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .section-title i {
+            color: var(--primary);
+            font-size: 16px;
+        }
+
+        .activity-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .activity-item {
+            background: var(--bg-primary);
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            padding: 16px;
+            transition: all 0.2s;
+            cursor: pointer;
+        }
+
+        .activity-item:hover {
+            border-color: var(--accent);
+            box-shadow: 0 2px 8px rgba(26, 26, 26, 0.1);
+        }
+
+        .activity-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 12px;
+        }
+
+        .activity-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+        }
+
+        .activity-icon.invoice { background: rgba(99, 153, 34, 0.1); color: var(--green); }
+        .activity-icon.po { background: rgba(83, 74, 183, 0.1); color: var(--accent); }
+        .activity-icon.shipment { background: rgba(24, 158, 117, 0.1); color: var(--teal); }
+        .activity-icon.contract { background: rgba(216, 90, 48, 0.1); color: var(--coral); }
+        .activity-icon.task { background: rgba(186, 117, 23, 0.1); color: var(--amber); }
+        .activity-icon.quote { background: rgba(55, 138, 221, 0.1); color: var(--blue); }
+
+        .activity-content {
+            flex: 1;
+        }
+
+        .activity-title {
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .activity-subtitle {
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+
+        .activity-time {
+            font-size: 12px;
+            color: var(--text-tertiary);
+        }
+
+        .activity-status {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .status-badge {
+            padding: 4px 10px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+
+        .status-pending { background: rgba(216, 90, 48, 0.1); color: var(--coral); }
+        .status-active { background: rgba(24, 158, 117, 0.1); color: var(--teal); }
+        .status-completed { background: rgba(99, 153, 34, 0.1); color: var(--green); }
+        .status-approved { background: rgba(55, 138, 221, 0.1); color: var(--blue); }
+
+        .action-btn {
+            padding: 6px 12px;
+            background: transparent;
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .action-btn:hover {
+            background: var(--bg-secondary);
+            border-color: var(--border-hover);
+        }
+
+        .action-btn.primary {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+
+        .action-btn.primary:hover {
+            background: var(--primary-light);
+        }
+
+        .vendors-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 16px;
+        }
+
+        .vendor-card {
+            background: var(--bg-primary);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 20px;
+            transition: all 0.2s;
+            cursor: pointer;
+        }
+
+        .vendor-card:hover {
+            border-color: var(--accent);
+            box-shadow: 0 4px 12px rgba(26, 26, 26, 0.1);
+        }
+
+        .vendor-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+
+        .vendor-avatar {
+            width: 48px;
+            height: 48px;
+            border-radius: 8px;
+            background: linear-gradient(135deg, var(--accent), var(--accent-light));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 14px;
+            font-weight: 700;
+        }
+
+        .vendor-info h3 {
+            font-size: 14px;
+            margin-bottom: 4px;
+        }
+
+        .vendor-info p {
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+
+        .vendor-stats {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            padding: 12px 0;
+            border-top: 1px solid var(--border);
+            border-bottom: 1px solid var(--border);
+            margin: 12px 0;
+        }
+
+        .vendor-stat {
+            text-align: center;
+        }
+
+        .vendor-stat-label {
+            font-size: 11px;
+            color: var(--text-tertiary);
+        }
+
+        .vendor-stat-value {
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        .vendor-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .vendor-btn {
+            flex: 1;
+            padding: 8px;
+            border: 1px solid var(--border);
+            background: transparent;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .vendor-btn:hover {
+            background: var(--bg-secondary);
+        }
+
+        /* Messaging Styles */
+        .messaging-container {
+            display: flex;
+            height: 100%;
+            gap: 16px;
+        }
+
+        .conversation-list {
+            width: 280px;
+            background: var(--bg-primary);
+            border-right: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            border-radius: 8px;
+        }
+
+        .conversation-list-header {
+            padding: 16px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            font-size: 13px;
+            background: var(--bg-secondary);
+        }
+
+        .conversation-list-items {
+            flex: 1;
+            overflow-y: auto;
+        }
+
+        .conversation-list-item {
+            padding: 12px 16px;
+            border-bottom: 1px solid var(--border);
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .conversation-list-item:hover {
+            background: var(--bg-secondary);
+        }
+
+        .conversation-list-item.active {
+            background: var(--bg-secondary);
+            border-left: 3px solid var(--primary);
+            padding-left: 13px;
+        }
+
+        .conversation-avatar-small {
+            width: 40px;
+            height: 40px;
+            border-radius: 6px;
+            background: linear-gradient(135deg, var(--accent), var(--accent-light));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 12px;
+            font-weight: 700;
+            flex-shrink: 0;
+        }
+
+        .conversation-preview-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .conversation-name-small {
+            font-size: 13px;
+            font-weight: 600;
+            margin-bottom: 2px;
+        }
+
+        .conversation-preview-text {
+            font-size: 12px;
+            color: var(--text-secondary);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .chat-window {
+            flex: 1;
+            background: var(--bg-primary);
+            border-radius: 8px;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .chat-header {
+            padding: 16px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .message-group {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 8px;
+        }
+
+        .message-group.you {
+            justify-content: flex-end;
+        }
+
+        .message-avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 4px;
+            background: linear-gradient(135deg, var(--accent), var(--accent-light));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 10px;
+            font-weight: 700;
+            flex-shrink: 0;
+        }
+
+        .message-bubble {
+            max-width: 60%;
+            background: var(--bg-secondary);
+            padding: 10px 14px;
+            border-radius: 6px;
+            font-size: 13px;
+            line-height: 1.4;
+        }
+
+        .message-group.you .message-bubble {
+            background: var(--primary);
+            color: white;
+        }
+
+        .message-time {
+            font-size: 11px;
+            color: var(--text-tertiary);
+            margin-top: 2px;
+        }
+
+        .chat-input-area {
+            padding: 16px;
+            border-top: 1px solid var(--border);
+            display: flex;
+            gap: 12px;
+        }
+
+        .chat-input {
+            flex: 1;
+            padding: 10px 14px;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            font-size: 13px;
+            background: var(--bg-secondary);
+        }
+
+        .chat-input:focus {
+            outline: none;
+            border-color: var(--primary);
+            background: var(--bg-primary);
+        }
+
+        .chat-send-btn {
+            padding: 10px 16px;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+
+        .panel {
+            width: 360px;
+            background: var(--bg-primary);
+            border-left: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            border-radius: 8px;
+        }
+
+        .panel-header {
+            padding: 16px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .panel-title {
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--text-primary);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 12px;
+        }
+
+        .panel-content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 16px;
+        }
+
+        .conversation-item {
+            display: flex;
+            gap: 12px;
+            padding: 12px;
+            margin-bottom: 8px;
+            border-radius: 6px;
+            background: var(--bg-secondary);
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .conversation-item:hover {
+            background: var(--bg-tertiary);
+        }
+
+        .avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 6px;
+            background: linear-gradient(135deg, var(--accent), var(--accent-light));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 12px;
+            font-weight: 700;
+            flex-shrink: 0;
+        }
+
+        .conversation-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .conversation-name {
+            font-size: 13px;
+            font-weight: 600;
+            margin-bottom: 2px;
+        }
+
+        .conversation-preview {
+            font-size: 12px;
+            color: var(--text-secondary);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .doc-item {
+            display: flex;
+            gap: 10px;
+            padding: 10px;
+            margin-bottom: 8px;
+            border-radius: 6px;
+            background: var(--bg-secondary);
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .doc-item:hover {
+            background: var(--bg-tertiary);
+        }
+
+        .doc-icon {
+            width: 32px;
+            height: 32px;
+            border-radius: 4px;
+            background: rgba(83, 74, 183, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--accent);
+            font-size: 14px;
+            flex-shrink: 0;
+        }
+
+        .doc-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .doc-name {
+            font-size: 12px;
+            font-weight: 600;
+            margin-bottom: 2px;
+        }
+
+        .doc-meta {
+            font-size: 11px;
+            color: var(--text-tertiary);
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: var(--bg-primary);
+            border-radius: 12px;
+            width: 100%;
+            max-width: 800px;
+            max-height: 90vh;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .modal-content.narrow {
+            max-width: 480px;
+        }
+
+        .modal-header {
+            padding: 20px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+        }
+
+        .modal-body {
+            padding: 20px;
+            flex: 1;
+            overflow-y: auto;
+        }
+
+        .modal-footer {
+            padding: 16px 20px;
+            border-top: 1px solid var(--border);
+            display: flex;
+            gap: 12px;
+            justify-content: flex-end;
+        }
+
+        .obj-field {
+            margin-bottom: 20px;
+        }
+
+        .obj-label {
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--text-tertiary);
+            text-transform: uppercase;
+            margin-bottom: 6px;
+        }
+
+        .obj-value {
+            font-size: 14px;
+            color: var(--text-primary);
+            font-weight: 500;
+        }
+
+        .conversation-thread {
+            border-top: 1px solid var(--border);
+            padding-top: 20px;
+            margin-top: 20px;
+        }
+
+        .conversation-title {
+            font-size: 13px;
+            font-weight: 700;
+            margin-bottom: 12px;
+        }
+
+        .message {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+
+        .message-content-wrapper {
+            flex: 1;
+        }
+
+        .message-header {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 4px;
+        }
+
+        .message-sender {
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .message-text {
+            font-size: 13px;
+            color: var(--text-secondary);
+            line-height: 1.5;
+            padding: 10px 12px;
+            background: var(--bg-secondary);
+            border-radius: 6px;
+        }
+
+        .close-btn {
+            width: 32px;
+            height: 32px;
+            border-radius: 6px;
+            border: 1px solid var(--border);
+            background: transparent;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .close-btn:hover {
+            background: var(--bg-secondary);
+        }
+
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        .form-label {
+            display: block;
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--text-tertiary);
+            text-transform: uppercase;
+            margin-bottom: 6px;
+        }
+
+        .form-input, .form-select, .form-textarea {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            font-size: 13px;
+            font-family: inherit;
+            background: var(--bg-secondary);
+        }
+
+        .form-input:focus, .form-select:focus, .form-textarea:focus {
+            outline: none;
+            border-color: var(--accent);
+            background: var(--bg-primary);
+        }
+
+        .form-textarea {
+            resize: vertical;
+            min-height: 70px;
+        }
+
+        .empty-state {
+            padding: 32px 16px;
+            text-align: center;
+            color: var(--text-tertiary);
+            font-size: 13px;
+        }
+
+        .toast {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            background: var(--primary);
+            color: white;
+            padding: 12px 20px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 600;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+            z-index: 2000;
+            opacity: 0;
+            transform: translateY(8px);
+            transition: all 0.2s;
+            pointer-events: none;
+        }
+
+        .toast.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--border);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--border-hover);
+        }
+    </style>
+</head>
+<body>
+    <div class="app">
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <div class="sidebar-header">
+                <div class="logo-section">
+                    <div class="logo-icon">⬚</div>
+                    <div class="logo-text">
+                        <div class="logo-main">UNION</div>
+                        <div class="logo-sub">CONNECT</div>
+                    </div>
+                </div>
+                <div class="tagline">Vendor Operations Platform</div>
+
+                <select class="industry-selector" id="industrySelector" onchange="switchIndustry(this.value)">
+                    <option value="food">🍗 Food & Beverage</option>
+                    <option value="manufacturing">🏭 Manufacturing</option>
+                    <option value="logistics">🚚 Logistics</option>
+                    <option value="retail">🛍️ Retail</option>
+                    <option value="construction">🏗️ Construction</option>
+                    <option value="tech">💻 Technology</option>
+                </select>
+            </div>
+
+            <div class="sidebar-nav">
+                <button class="nav-item active" onclick="switchTab('dashboard')">
+                    <i class="ti ti-home"></i> Dashboard
+                </button>
+                <button class="nav-item" onclick="switchTab('vendors')">
+                    <i class="ti ti-users"></i> Vendors
+                </button>
+                <button class="nav-item" onclick="switchTab('operations')">
+                    <i class="ti ti-clipboard-list"></i> Operations
+                </button>
+                <button class="nav-item" onclick="switchTab('messaging')">
+                    <i class="ti ti-message-circle"></i> Messaging
+                </button>
+            </div>
+
+            <div class="sidebar-list">
+                <div class="list-section">
+                    <div class="list-header">Active Vendors</div>
+                    <div id="vendorsList"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main -->
+        <div class="main">
+            <div class="header">
+                <div>
+                    <div class="header-title" id="headerTitle">Operations Dashboard</div>
+                    <div class="header-subtitle" id="headerSubtitle">Real-time visibility into vendor operations</div>
+                </div>
+                <div class="header-actions">
+                    <button class="btn-secondary" onclick="openNewVendorModal()"><i class="ti ti-user-plus"></i> New Vendor</button>
+                    <button class="btn-primary" onclick="openNewOperationModal()"><i class="ti ti-plus"></i> New Operation</button>
+                </div>
+            </div>
+
+            <div class="content">
+                <!-- Dashboard View -->
+                <div class="view active" id="dashboardView">
+                    <div class="dashboard">
+                        <div class="section">
+                            <div class="section-title">
+                                <i class="ti ti-alert-circle"></i>
+                                Pending Approvals
+                            </div>
+                            <div class="activity-list" id="pendingApprovals"></div>
+                        </div>
+
+                        <div class="section">
+                            <div class="section-title">
+                                <i class="ti ti-activity"></i>
+                                Recent Activity
+                            </div>
+                            <div class="activity-list" id="recentActivity"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Vendors View -->
+                <div class="view" id="vendorsView">
+                    <div class="dashboard">
+                        <div class="section">
+                            <div class="section-title">
+                                <i class="ti ti-users"></i>
+                                Active Vendors
+                            </div>
+                            <div class="vendors-grid" id="vendorsGrid"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Operations View -->
+                <div class="view" id="operationsView">
+                    <div class="dashboard">
+                        <div class="section">
+                            <div class="section-title">
+                                <i class="ti ti-clipboard-list"></i>
+                                All Operations
+                            </div>
+                            <div class="activity-list" id="allOperations"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Messaging View -->
+                <div class="view" id="messagingView">
+                    <div class="dashboard" style="padding: 0;">
+                        <div class="messaging-container">
+                            <div class="conversation-list">
+                                <div class="conversation-list-header">
+                                    <input type="text" class="search-input" id="conversationSearch" placeholder="Search conversations..." oninput="renderConversationList()">
+                                </div>
+                                <div class="conversation-list-items" id="conversationListItems"></div>
+                            </div>
+
+                            <div class="chat-window">
+                                <div class="chat-header">
+                                    <div>
+                                        <div class="header-title" style="margin-bottom: 4px;" id="chatVendorName">Select a conversation</div>
+                                        <div class="header-subtitle">Start messaging</div>
+                                    </div>
+                                </div>
+                                <div class="chat-messages" id="chatMessages"></div>
+                                <div class="chat-input-area">
+                                    <input type="text" class="chat-input" id="chatInput" placeholder="Type a message..." onkeydown="if(event.key==='Enter') sendMessage()">
+                                    <button class="chat-send-btn" onclick="sendMessage()">Send</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right Panel -->
+                <div class="panel">
+                    <div class="panel-header">
+                        <div class="panel-title" id="panelTitle">Connected Vendors</div>
+                    </div>
+                    <div class="panel-content" id="panelContent"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Object Detail Modal -->
+    <div class="modal" id="detailModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div>
+                    <h2 style="font-size: 18px; margin-bottom: 4px;" id="modalTitle">Object Details</h2>
+                    <p style="font-size: 12px; color: var(--text-secondary);" id="modalSubtitle">Details</p>
+                </div>
+                <button class="close-btn" onclick="closeModal()"><i class="ti ti-x"></i></button>
+            </div>
+
+            <div class="modal-body" id="modalBody"></div>
+
+            <div class="modal-footer">
+                <button class="btn-secondary" onclick="closeModal()">Close</button>
+                <button class="btn-primary" id="modalAction" onclick="performAction()">Take Action</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- New Operation Modal -->
+    <div class="modal" id="newOpModal">
+        <div class="modal-content narrow">
+            <div class="modal-header">
+                <div>
+                    <h2 style="font-size: 18px; margin-bottom: 4px;">New Operation</h2>
+                    <p style="font-size: 12px; color: var(--text-secondary);">Create an invoice, PO, shipment, contract, task or quote</p>
+                </div>
+                <button class="close-btn" onclick="closeNewOpModal()"><i class="ti ti-x"></i></button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label class="form-label">Type</label>
+                    <select class="form-select" id="newOpType">
+                        <option value="invoice">Invoice</option>
+                        <option value="po">Purchase Order</option>
+                        <option value="shipment">Shipment</option>
+                        <option value="contract">Contract</option>
+                        <option value="task">Task</option>
+                        <option value="quote">Quote</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Vendor</label>
+                    <select class="form-select" id="newOpVendor"></select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Title</label>
+                    <input class="form-input" id="newOpTitle" placeholder="e.g. Invoice #INV-2024-999">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Amount / Value</label>
+                    <input class="form-input" id="newOpAmount" placeholder="e.g. $4,200 or Q3">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Description</label>
+                    <textarea class="form-textarea" id="newOpDesc" placeholder="Short description"></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-secondary" onclick="closeNewOpModal()">Cancel</button>
+                <button class="btn-primary" onclick="submitNewOperation()">Create</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- New Vendor Modal -->
+    <div class="modal" id="newVendorModal">
+        <div class="modal-content narrow">
+            <div class="modal-header">
+                <div>
+                    <h2 style="font-size: 18px; margin-bottom: 4px;">New Vendor</h2>
+                    <p style="font-size: 12px; color: var(--text-secondary);">Add a vendor to this industry</p>
+                </div>
+                <button class="close-btn" onclick="closeNewVendorModal()"><i class="ti ti-x"></i></button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label class="form-label">Name</label>
+                    <input class="form-input" id="newVendorName" placeholder="e.g. Acme Supply Co">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Type</label>
+                    <input class="form-input" id="newVendorType" placeholder="e.g. Supplier">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Rating (0-5)</label>
+                    <input class="form-input" id="newVendorRating" type="number" min="0" max="5" step="0.1" value="4.5">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Active Orders</label>
+                    <input class="form-input" id="newVendorActive" type="number" min="0" value="0">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-secondary" onclick="closeNewVendorModal()">Cancel</button>
+                <button class="btn-primary" onclick="submitNewVendor()">Add Vendor</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="toast" id="toast"></div>
+
+    <script src="/app.js"></script>
+</body>
+</html>

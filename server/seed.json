@@ -1,0 +1,1054 @@
+{
+  "industryData": {
+    "food": {
+      "name": "🍗 Food & Beverage",
+      "vendors": [
+        {
+          "id": "fs",
+          "name": "FreshSource",
+          "type": "Supplier",
+          "rating": 4.9,
+          "active": 15
+        },
+        {
+          "id": "pc",
+          "name": "Pacific Farms",
+          "type": "Produce",
+          "rating": 4.6,
+          "active": 8
+        },
+        {
+          "id": "md",
+          "name": "Meat Direct",
+          "type": "Distributor",
+          "rating": 4.8,
+          "active": 12
+        },
+        {
+          "id": "bd",
+          "name": "Beverage Depot",
+          "type": "Beverages",
+          "rating": 4.5,
+          "active": 6
+        }
+      ],
+      "operations": [
+        {
+          "id": "inv-001",
+          "type": "invoice",
+          "title": "Invoice #INV-2024-847",
+          "vendor": "FreshSource",
+          "amount": "$12,400",
+          "status": "pending",
+          "desc": "Q2 Delivery - 10,000 lbs chicken",
+          "icon": "📄"
+        },
+        {
+          "id": "po-002",
+          "type": "po",
+          "title": "PO #PO-2024-456",
+          "vendor": "Meat Direct",
+          "amount": "$28,500",
+          "status": "pending",
+          "desc": "Bulk meat order for June",
+          "icon": "📋"
+        },
+        {
+          "id": "ship-003",
+          "type": "shipment",
+          "title": "Shipment #SHP-2024-123",
+          "vendor": "FreshSource",
+          "amount": "$8,200",
+          "status": "active",
+          "desc": "5,000 lbs chicken in transit",
+          "icon": "🚚"
+        },
+        {
+          "id": "cont-004",
+          "type": "contract",
+          "title": "Supply Agreement v2",
+          "vendor": "FreshSource",
+          "amount": "Quarterly",
+          "status": "review",
+          "desc": "Updated with volume discounts",
+          "icon": "📑"
+        },
+        {
+          "id": "task-005",
+          "type": "task",
+          "title": "Follow-up with Pacific Farms",
+          "vendor": "Pacific Farms",
+          "amount": "Q3",
+          "status": "pending",
+          "desc": "Confirm organic certifications",
+          "icon": "✓"
+        },
+        {
+          "id": "inv-006",
+          "type": "invoice",
+          "title": "Invoice #INV-2024-846",
+          "vendor": "Industrial Equipment",
+          "amount": "$2,400",
+          "status": "approved",
+          "desc": "Maintenance services",
+          "icon": "📄"
+        }
+      ]
+    },
+    "manufacturing": {
+      "name": "🏭 Manufacturing",
+      "vendors": [
+        {
+          "id": "sm",
+          "name": "Steel Mills Co",
+          "type": "Raw Materials",
+          "rating": 4.7,
+          "active": 20
+        },
+        {
+          "id": "cp",
+          "name": "Components Pro",
+          "type": "Parts",
+          "rating": 4.9,
+          "active": 18
+        },
+        {
+          "id": "chem",
+          "name": "Chemical Supply",
+          "type": "Chemicals",
+          "rating": 4.3,
+          "active": 7
+        },
+        {
+          "id": "tool",
+          "name": "Tool Masters",
+          "type": "Equipment",
+          "rating": 4.6,
+          "active": 9
+        }
+      ],
+      "operations": [
+        {
+          "id": "inv-101",
+          "type": "invoice",
+          "title": "Invoice #INV-2024-901",
+          "vendor": "Steel Mills Co",
+          "amount": "$45,000",
+          "status": "pending",
+          "desc": "50 tons cold-rolled steel sheets",
+          "icon": "📄"
+        },
+        {
+          "id": "po-102",
+          "type": "po",
+          "title": "PO #PO-2024-512",
+          "vendor": "Components Pro",
+          "amount": "$18,750",
+          "status": "pending",
+          "desc": "Electronic components shipment",
+          "icon": "📋"
+        },
+        {
+          "id": "quote-103",
+          "type": "quote",
+          "title": "Quote Request #QTE-2024-103",
+          "vendor": "Chemical Supply",
+          "amount": "Pending",
+          "status": "pending",
+          "desc": "Industrial solvents pricing",
+          "icon": "💬"
+        },
+        {
+          "id": "cont-104",
+          "type": "contract",
+          "title": "Material Supply Agreement",
+          "vendor": "Steel Mills Co",
+          "amount": "Annual",
+          "status": "active",
+          "desc": "Quarterly delivery schedule",
+          "icon": "📑"
+        },
+        {
+          "id": "po-105",
+          "type": "po",
+          "title": "PO #PO-2024-513",
+          "vendor": "Tool Masters",
+          "amount": "$9,200",
+          "status": "completed",
+          "desc": "Equipment rental agreement",
+          "icon": "📋"
+        }
+      ]
+    },
+    "logistics": {
+      "name": "🚚 Logistics",
+      "vendors": [
+        {
+          "id": "fr",
+          "name": "FastRoute Logistics",
+          "type": "Transportation",
+          "rating": 4.8,
+          "active": 25
+        },
+        {
+          "id": "ws",
+          "name": "Warehouse Solutions",
+          "type": "Storage",
+          "rating": 4.7,
+          "active": 12
+        },
+        {
+          "id": "cc",
+          "name": "Cold Chain Pro",
+          "type": "Refrigeration",
+          "rating": 4.9,
+          "active": 8
+        },
+        {
+          "id": "customs",
+          "name": "Customs Broker Int",
+          "type": "Customs",
+          "rating": 4.4,
+          "active": 5
+        }
+      ],
+      "operations": [
+        {
+          "id": "inv-201",
+          "type": "invoice",
+          "title": "Invoice #INV-2024-950",
+          "vendor": "FastRoute Logistics",
+          "amount": "$3,200",
+          "status": "approved",
+          "desc": "May transportation charges",
+          "icon": "📄"
+        },
+        {
+          "id": "ship-202",
+          "type": "shipment",
+          "title": "Shipment #SHP-2024-567",
+          "vendor": "FastRoute Logistics",
+          "amount": "On Route",
+          "status": "active",
+          "desc": "12 pallets to regional hubs",
+          "icon": "🚚"
+        },
+        {
+          "id": "po-203",
+          "type": "po",
+          "title": "PO #PO-2024-601",
+          "vendor": "Warehouse Solutions",
+          "amount": "$8,500",
+          "status": "pending",
+          "desc": "3 months storage facility rental",
+          "icon": "📋"
+        },
+        {
+          "id": "task-204",
+          "type": "task",
+          "title": "Customs Clearance Docs",
+          "vendor": "Customs Broker Int",
+          "amount": "Pending",
+          "status": "pending",
+          "desc": "International shipment documentation",
+          "icon": "✓"
+        }
+      ]
+    },
+    "retail": {
+      "name": "🛍️ Retail",
+      "vendors": [
+        {
+          "id": "dist",
+          "name": "Global Distributors",
+          "type": "Wholesale",
+          "rating": 4.6,
+          "active": 22
+        },
+        {
+          "id": "mfg",
+          "name": "Factory Direct",
+          "type": "Manufacturer",
+          "rating": 4.8,
+          "active": 16
+        },
+        {
+          "id": "pack",
+          "name": "Packaging Plus",
+          "type": "Materials",
+          "rating": 4.5,
+          "active": 10
+        },
+        {
+          "id": "mark",
+          "name": "Marketing Services",
+          "type": "Services",
+          "rating": 4.7,
+          "active": 8
+        }
+      ],
+      "operations": [
+        {
+          "id": "inv-301",
+          "type": "invoice",
+          "title": "Invoice #INV-2024-775",
+          "vendor": "Global Distributors",
+          "amount": "$22,400",
+          "status": "pending",
+          "desc": "Summer inventory replenishment",
+          "icon": "📄"
+        },
+        {
+          "id": "po-302",
+          "type": "po",
+          "title": "PO #PO-2024-705",
+          "vendor": "Factory Direct",
+          "amount": "$55,000",
+          "status": "active",
+          "desc": "Private label clothing line",
+          "icon": "📋"
+        },
+        {
+          "id": "cont-303",
+          "type": "contract",
+          "title": "Vendor Agreement 2024",
+          "vendor": "Global Distributors",
+          "amount": "Annual",
+          "status": "review",
+          "desc": "Updated terms and pricing",
+          "icon": "📑"
+        },
+        {
+          "id": "quote-304",
+          "type": "quote",
+          "title": "Quote #QTE-2024-304",
+          "vendor": "Packaging Plus",
+          "amount": "Pending",
+          "status": "pending",
+          "desc": "Custom branded boxes",
+          "icon": "💬"
+        }
+      ]
+    },
+    "construction": {
+      "name": "🏗️ Construction",
+      "vendors": [
+        {
+          "id": "conc",
+          "name": "Concrete & Aggregates",
+          "type": "Materials",
+          "rating": 4.6,
+          "active": 14
+        },
+        {
+          "id": "steel",
+          "name": "Structural Steel Inc",
+          "type": "Steel",
+          "rating": 4.7,
+          "active": 9
+        },
+        {
+          "id": "equip",
+          "name": "Equipment Rental Co",
+          "type": "Equipment",
+          "rating": 4.8,
+          "active": 11
+        },
+        {
+          "id": "labor",
+          "name": "Labor Services Ltd",
+          "type": "Labor",
+          "rating": 4.4,
+          "active": 6
+        }
+      ],
+      "operations": [
+        {
+          "id": "inv-401",
+          "type": "invoice",
+          "title": "Invoice #INV-2024-820",
+          "vendor": "Concrete & Aggregates",
+          "amount": "$18,900",
+          "status": "pending",
+          "desc": "Concrete delivery May 2024",
+          "icon": "📄"
+        },
+        {
+          "id": "po-402",
+          "type": "po",
+          "title": "PO #PO-2024-801",
+          "vendor": "Structural Steel Inc",
+          "amount": "$67,500",
+          "status": "pending",
+          "desc": "Steel beams and columns",
+          "icon": "📋"
+        },
+        {
+          "id": "ship-403",
+          "type": "shipment",
+          "title": "Shipment #SHP-2024-890",
+          "vendor": "Equipment Rental Co",
+          "amount": "In Transit",
+          "status": "active",
+          "desc": "Excavator and bulldozer delivery",
+          "icon": "🚚"
+        }
+      ]
+    },
+    "tech": {
+      "name": "💻 Technology",
+      "vendors": [
+        {
+          "id": "cloud",
+          "name": "Cloud Services Inc",
+          "type": "SaaS",
+          "rating": 4.9,
+          "active": 10
+        },
+        {
+          "id": "hardware",
+          "name": "Hardware Direct",
+          "type": "Equipment",
+          "rating": 4.7,
+          "active": 13
+        },
+        {
+          "id": "soft",
+          "name": "Software Solutions",
+          "type": "Software",
+          "rating": 4.8,
+          "active": 8
+        },
+        {
+          "id": "support",
+          "name": "Support Services",
+          "type": "Services",
+          "rating": 4.6,
+          "active": 5
+        }
+      ],
+      "operations": [
+        {
+          "id": "inv-501",
+          "type": "invoice",
+          "title": "Invoice #INV-2024-888",
+          "vendor": "Cloud Services Inc",
+          "amount": "$4,500",
+          "status": "pending",
+          "desc": "Q2 cloud infrastructure",
+          "icon": "📄"
+        },
+        {
+          "id": "po-502",
+          "type": "po",
+          "title": "PO #PO-2024-903",
+          "vendor": "Hardware Direct",
+          "amount": "$32,000",
+          "status": "active",
+          "desc": "Laptop and server purchases",
+          "icon": "📋"
+        },
+        {
+          "id": "cont-503",
+          "type": "contract",
+          "title": "SaaS License Agreement",
+          "vendor": "Software Solutions",
+          "amount": "Annual",
+          "status": "review",
+          "desc": "Enterprise license terms",
+          "icon": "📑"
+        },
+        {
+          "id": "quote-504",
+          "type": "quote",
+          "title": "Quote #QTE-2024-504",
+          "vendor": "Support Services",
+          "amount": "Pending",
+          "status": "pending",
+          "desc": "24/7 IT support package",
+          "icon": "💬"
+        }
+      ]
+    }
+  },
+  "conversations": {
+    "food": {
+      "fs": [
+        {
+          "from": "FreshSource",
+          "msg": "Can you approve the Q2 invoice?"
+        },
+        {
+          "from": "FreshSource",
+          "msg": "Confirming Monday delivery time"
+        },
+        {
+          "from": "FreshSource",
+          "msg": "Volume discounts available for Q3"
+        }
+      ],
+      "pc": [
+        {
+          "from": "Pacific Farms",
+          "msg": "Seasonal organic certification renewal"
+        },
+        {
+          "from": "Pacific Farms",
+          "msg": "New summer produce available"
+        }
+      ],
+      "md": [
+        {
+          "from": "Meat Direct",
+          "msg": "Bulk order pricing updated"
+        },
+        {
+          "from": "Meat Direct",
+          "msg": "June delivery schedule confirmed"
+        }
+      ],
+      "bd": [
+        {
+          "from": "Beverage Depot",
+          "msg": "Q2 inventory levels"
+        },
+        {
+          "from": "Beverage Depot",
+          "msg": "Special promotional pricing"
+        }
+      ]
+    },
+    "manufacturing": {
+      "sm": [
+        {
+          "from": "Steel Mills Co",
+          "msg": "Steel sheet inventory update"
+        },
+        {
+          "from": "Steel Mills Co",
+          "msg": "Price adjustment for Q2"
+        }
+      ],
+      "cp": [
+        {
+          "from": "Components Pro",
+          "msg": "Component specifications updated"
+        },
+        {
+          "from": "Components Pro",
+          "msg": "Lead time confirmation"
+        }
+      ],
+      "chem": [
+        {
+          "from": "Chemical Supply",
+          "msg": "Safety data sheets provided"
+        },
+        {
+          "from": "Chemical Supply",
+          "msg": "Bulk discount terms"
+        }
+      ],
+      "tool": [
+        {
+          "from": "Tool Masters",
+          "msg": "Equipment maintenance schedule"
+        },
+        {
+          "from": "Tool Masters",
+          "msg": "Warranty extension available"
+        }
+      ]
+    },
+    "logistics": {
+      "fr": [
+        {
+          "from": "FastRoute Logistics",
+          "msg": "Real-time shipment tracking"
+        },
+        {
+          "from": "FastRoute Logistics",
+          "msg": "Route optimization available"
+        }
+      ],
+      "ws": [
+        {
+          "from": "Warehouse Solutions",
+          "msg": "Storage rates for next quarter"
+        },
+        {
+          "from": "Warehouse Solutions",
+          "msg": "Capacity expansion plans"
+        }
+      ],
+      "cc": [
+        {
+          "from": "Cold Chain Pro",
+          "msg": "Temperature control verified"
+        },
+        {
+          "from": "Cold Chain Pro",
+          "msg": "Perishable goods handling procedures"
+        }
+      ],
+      "customs": [
+        {
+          "from": "Customs Broker Int",
+          "msg": "Import documentation required"
+        },
+        {
+          "from": "Customs Broker Int",
+          "msg": "Customs clearance complete"
+        }
+      ]
+    },
+    "retail": {
+      "dist": [
+        {
+          "from": "Global Distributors",
+          "msg": "Summer inventory planning"
+        },
+        {
+          "from": "Global Distributors",
+          "msg": "Wholesale pricing tiers"
+        }
+      ],
+      "mfg": [
+        {
+          "from": "Factory Direct",
+          "msg": "Custom design approval"
+        },
+        {
+          "from": "Factory Direct",
+          "msg": "Production schedule confirmed"
+        }
+      ],
+      "pack": [
+        {
+          "from": "Packaging Plus",
+          "msg": "Custom branding options"
+        },
+        {
+          "from": "Packaging Plus",
+          "msg": "Eco-friendly materials available"
+        }
+      ],
+      "mark": [
+        {
+          "from": "Marketing Services",
+          "msg": "Campaign strategy review"
+        },
+        {
+          "from": "Marketing Services",
+          "msg": "Q3 promotional calendar"
+        }
+      ]
+    },
+    "construction": {
+      "conc": [
+        {
+          "from": "Concrete & Aggregates",
+          "msg": "Delivery schedule flexibility"
+        },
+        {
+          "from": "Concrete & Aggregates",
+          "msg": "Quality testing completed"
+        }
+      ],
+      "steel": [
+        {
+          "from": "Structural Steel Inc",
+          "msg": "Steel specifications confirmed"
+        },
+        {
+          "from": "Structural Steel Inc",
+          "msg": "Weight certification provided"
+        }
+      ],
+      "equip": [
+        {
+          "from": "Equipment Rental Co",
+          "msg": "Equipment maintenance schedule"
+        },
+        {
+          "from": "Equipment Rental Co",
+          "msg": "Rental rate options"
+        }
+      ],
+      "labor": [
+        {
+          "from": "Labor Services Ltd",
+          "msg": "Crew availability calendar"
+        },
+        {
+          "from": "Labor Services Ltd",
+          "msg": "Safety certification status"
+        }
+      ]
+    },
+    "tech": {
+      "cloud": [
+        {
+          "from": "Cloud Services Inc",
+          "msg": "Infrastructure scaling options"
+        },
+        {
+          "from": "Cloud Services Inc",
+          "msg": "SLA terms and conditions"
+        }
+      ],
+      "hardware": [
+        {
+          "from": "Hardware Direct",
+          "msg": "Device procurement list"
+        },
+        {
+          "from": "Hardware Direct",
+          "msg": "Bulk discount available"
+        }
+      ],
+      "soft": [
+        {
+          "from": "Software Solutions",
+          "msg": "License key deployment"
+        },
+        {
+          "from": "Software Solutions",
+          "msg": "Update schedule confirmed"
+        }
+      ],
+      "support": [
+        {
+          "from": "Support Services",
+          "msg": "Response time SLA"
+        },
+        {
+          "from": "Support Services",
+          "msg": "Escalation procedures"
+        }
+      ]
+    }
+  },
+  "documents": {
+    "food": {
+      "fs": [
+        {
+          "name": "Q2_Pricing_Breakdown.xlsx",
+          "size": "2.4 MB",
+          "time": "2 hrs ago"
+        },
+        {
+          "name": "Supply_Agreement_v2.pdf",
+          "size": "856 KB",
+          "time": "1 hr ago"
+        },
+        {
+          "name": "Invoice_INV-2024-847.pdf",
+          "size": "342 KB",
+          "time": "2 hrs ago"
+        },
+        {
+          "name": "Organic_Certification.pdf",
+          "size": "1.2 MB",
+          "time": "5 days ago"
+        }
+      ],
+      "pc": [
+        {
+          "name": "Organic_Cert_Renewal.pdf",
+          "size": "892 KB",
+          "time": "3 days ago"
+        },
+        {
+          "name": "Q3_Produce_List.xlsx",
+          "size": "560 KB",
+          "time": "1 week ago"
+        }
+      ],
+      "md": [
+        {
+          "name": "Bulk_Order_Terms.pdf",
+          "size": "445 KB",
+          "time": "2 days ago"
+        },
+        {
+          "name": "Quality_Specs.docx",
+          "size": "256 KB",
+          "time": "1 week ago"
+        }
+      ],
+      "bd": [
+        {
+          "name": "Beverage_Catalog.pdf",
+          "size": "3.2 MB",
+          "time": "2 weeks ago"
+        },
+        {
+          "name": "Pricing_Q2.xlsx",
+          "size": "128 KB",
+          "time": "1 week ago"
+        }
+      ]
+    },
+    "manufacturing": {
+      "sm": [
+        {
+          "name": "Steel_Specifications.pdf",
+          "size": "1.8 MB",
+          "time": "3 days ago"
+        },
+        {
+          "name": "Material_Cert.pdf",
+          "size": "756 KB",
+          "time": "5 days ago"
+        },
+        {
+          "name": "Pricing_Agreement.docx",
+          "size": "234 KB",
+          "time": "1 week ago"
+        }
+      ],
+      "cp": [
+        {
+          "name": "Component_List.xlsx",
+          "size": "892 KB",
+          "time": "2 days ago"
+        },
+        {
+          "name": "Quality_Standards.pdf",
+          "size": "1.1 MB",
+          "time": "1 week ago"
+        }
+      ],
+      "chem": [
+        {
+          "name": "Safety_Data_Sheets.pdf",
+          "size": "4.5 MB",
+          "time": "5 days ago"
+        },
+        {
+          "name": "Chemical_Inventory.xlsx",
+          "size": "340 KB",
+          "time": "3 days ago"
+        }
+      ],
+      "tool": [
+        {
+          "name": "Equipment_Manual.pdf",
+          "size": "2.3 MB",
+          "time": "2 weeks ago"
+        },
+        {
+          "name": "Maintenance_Schedule.docx",
+          "size": "185 KB",
+          "time": "1 week ago"
+        }
+      ]
+    },
+    "logistics": {
+      "fr": [
+        {
+          "name": "Shipping_Rates.xlsx",
+          "size": "654 KB",
+          "time": "1 week ago"
+        },
+        {
+          "name": "Service_Agreement.pdf",
+          "size": "892 KB",
+          "time": "2 weeks ago"
+        },
+        {
+          "name": "Route_Optimization.pdf",
+          "size": "1.2 MB",
+          "time": "3 days ago"
+        }
+      ],
+      "ws": [
+        {
+          "name": "Warehouse_Capacity.xlsx",
+          "size": "345 KB",
+          "time": "5 days ago"
+        },
+        {
+          "name": "Storage_Rates.pdf",
+          "size": "567 KB",
+          "time": "1 week ago"
+        }
+      ],
+      "cc": [
+        {
+          "name": "Temperature_Controls.pdf",
+          "size": "789 KB",
+          "time": "3 days ago"
+        },
+        {
+          "name": "Perishable_Handling.docx",
+          "size": "256 KB",
+          "time": "1 week ago"
+        }
+      ],
+      "customs": [
+        {
+          "name": "Import_Documentation.pdf",
+          "size": "1.5 MB",
+          "time": "2 days ago"
+        },
+        {
+          "name": "Tariff_Codes.xlsx",
+          "size": "423 KB",
+          "time": "1 week ago"
+        }
+      ]
+    },
+    "retail": {
+      "dist": [
+        {
+          "name": "Wholesale_Catalog.pdf",
+          "size": "5.2 MB",
+          "time": "1 week ago"
+        },
+        {
+          "name": "Pricing_Tiers.xlsx",
+          "size": "678 KB",
+          "time": "3 days ago"
+        }
+      ],
+      "mfg": [
+        {
+          "name": "Design_Specifications.pdf",
+          "size": "2.1 MB",
+          "time": "4 days ago"
+        },
+        {
+          "name": "Production_Timeline.docx",
+          "size": "234 KB",
+          "time": "2 days ago"
+        }
+      ],
+      "pack": [
+        {
+          "name": "Custom_Design_Mockup.pdf",
+          "size": "3.8 MB",
+          "time": "2 days ago"
+        },
+        {
+          "name": "Packaging_Options.xlsx",
+          "size": "512 KB",
+          "time": "1 week ago"
+        }
+      ],
+      "mark": [
+        {
+          "name": "Campaign_Strategy.pdf",
+          "size": "1.9 MB",
+          "time": "3 days ago"
+        },
+        {
+          "name": "Marketing_Calendar.xlsx",
+          "size": "445 KB",
+          "time": "1 week ago"
+        }
+      ]
+    },
+    "construction": {
+      "conc": [
+        {
+          "name": "Concrete_Specs.pdf",
+          "size": "1.2 MB",
+          "time": "2 days ago"
+        },
+        {
+          "name": "Quality_Testing.pdf",
+          "size": "945 KB",
+          "time": "3 days ago"
+        }
+      ],
+      "steel": [
+        {
+          "name": "Steel_Drawings.pdf",
+          "size": "4.1 MB",
+          "time": "1 day ago"
+        },
+        {
+          "name": "Weight_Certification.pdf",
+          "size": "567 KB",
+          "time": "2 days ago"
+        }
+      ],
+      "equip": [
+        {
+          "name": "Equipment_Specs.pdf",
+          "size": "2.3 MB",
+          "time": "3 days ago"
+        },
+        {
+          "name": "Rental_Agreement.docx",
+          "size": "312 KB",
+          "time": "1 week ago"
+        }
+      ],
+      "labor": [
+        {
+          "name": "Safety_Certification.pdf",
+          "size": "1.8 MB",
+          "time": "2 days ago"
+        },
+        {
+          "name": "Crew_Schedule.xlsx",
+          "size": "234 KB",
+          "time": "1 week ago"
+        }
+      ]
+    },
+    "tech": {
+      "cloud": [
+        {
+          "name": "Infrastructure_Specs.pdf",
+          "size": "1.5 MB",
+          "time": "3 days ago"
+        },
+        {
+          "name": "SLA_Agreement.pdf",
+          "size": "789 KB",
+          "time": "1 week ago"
+        }
+      ],
+      "hardware": [
+        {
+          "name": "Device_Inventory.xlsx",
+          "size": "456 KB",
+          "time": "2 days ago"
+        },
+        {
+          "name": "Procurement_List.docx",
+          "size": "234 KB",
+          "time": "1 week ago"
+        }
+      ],
+      "soft": [
+        {
+          "name": "License_Keys.xlsx",
+          "size": "123 KB",
+          "time": "3 days ago"
+        },
+        {
+          "name": "Software_Manual.pdf",
+          "size": "3.2 MB",
+          "time": "2 weeks ago"
+        }
+      ],
+      "support": [
+        {
+          "name": "Support_SLA.pdf",
+          "size": "567 KB",
+          "time": "1 week ago"
+        },
+        {
+          "name": "Escalation_Procedures.docx",
+          "size": "189 KB",
+          "time": "2 weeks ago"
+        }
+      ]
+    }
+  }
+}

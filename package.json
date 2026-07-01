@@ -1,0 +1,18 @@
+{
+  "name": "union-connect-mvp",
+  "version": "1.0.0",
+  "description": "Union Connect - Vendor Operations Platform MVP",
+  "main": "server/index.js",
+  "scripts": {
+    "start": "node server/index.js",
+    "dev": "node server/index.js"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^4.19.2",
+    "nanoid": "^3.3.7"
+  }
+}
