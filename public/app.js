@@ -1,42 +1,39 @@
 const API = '/api';
 
 const state = {
-  industry: 'food',
-  industries: [],
+  user: null,
+  company: null,
   vendors: [],
   operations: [],
   currentConversationVendor: null,
   messagesCache: {}, // vendorId -> messages[]
   documents: {},      // vendorId -> documents[]
-  currentModalOp: null
+  currentModalOp: null,
+  teammates: []
 };
 
 // ---------- API helpers ----------
-async function apiGet(path) {
-  const res = await fetch(`${API}${path}`);
-  if (!res.ok) throw new Error(`GET ${path} failed: ${res.status}`);
-  return res.json();
+async function apiRequest(method, path, body) {
+  const res = await fetch(`${API}${path}`, {
+    method,
+    headers: body ? { 'Content-Type': 'application/json' } : undefined,
+    body: body ? JSON.stringify(body) : undefined,
+    credentials: 'include'
+  });
+  let data = null;
+  try { data = await res.json(); } catch { /* no body */ }
+  if (!res.ok) {
+    const err = new Error((data && data.error) || `${method} ${path} failed: ${res.status}`);
+    err.status = res.status;
+    err.data = data;
+    throw err;
+  }
+  return data;
 }
 
-async function apiPost(path, body) {
-  const res = await fetch(`${API}${path}`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(body)
-  });
-  if (!res.ok) throw new Error(`POST ${path} failed: ${res.status}`);
-  return res.json();
-}
-
-async function apiPatch(path, body) {
-  const res = await fetch(`${API}${path}`, {
-    method: 'PATCH',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(body)
-  });
-  if (!res.ok) throw new Error(`PATCH ${path} failed: ${res.status}`);
-  return res.json();
-}
+const apiGet = (path) => apiRequest('GET', path);
+const apiPost = (path, body) => apiRequest('POST', path, body);
+const apiPatch = (path, body) => apiRequest('PATCH', path, body);
 
 function showToast(msg) {
   const el = document.getElementById('toast');
@@ -45,30 +42,122 @@ function showToast(msg) {
   setTimeout(() => el.classList.remove('show'), 2200);
 }
 
+function initials(str) {
+  return (str || '').toUpperCase().substring(0, 2);
+}
+
+function escapeHtml(str) {
+  if (str === null || str === undefined) return '';
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+function formatTime(iso) {
+  if (!iso) return '';
+  try {
+    const d = new Date(iso.replace(' ', 'T') + 'Z');
+    return d.toLocaleString(undefined, { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' });
+  } catch {
+    return iso;
+  }
+}
+
+const INDUSTRY_ICONS = {
+  food: '🍗', manufacturing: '🏭', logistics: '🚚', retail: '🛍️', construction: '🏗️', tech: '💻'
+};
+
+// ---------- Auth screen ----------
+function showLogin() {
+  document.getElementById('loginForm').style.display = '';
+  document.getElementById('signupForm').style.display = 'none';
+}
+
+function showSignup() {
+  document.getElementById('loginForm').style.display = 'none';
+  document.getElementById('signupForm').style.display = '';
+}
+
+async function login() {
+  const email = document.getElementById('loginEmail').value.trim();
+  const password = document.getElementById('loginPassword').value;
+  const errorEl = document.getElementById('loginError');
+  errorEl.textContent = '';
+  if (!email || !password) {
+    errorEl.textContent = 'Enter your email and password.';
+    return;
+  }
+  try {
+    const result = await apiPost('/auth/login', { email, password });
+    state.user = result.user;
+    state.company = result.company;
+    await enterApp();
+  } catch (e) {
+    errorEl.textContent = e.message || 'Login failed.';
+  }
+}
+
+async function signup() {
+  const companyName = document.getElementById('signupCompanyName').value.trim();
+  const industry = document.getElementById('signupIndustry').value;
+  const name = document.getElementById('signupName').value.trim();
+  const email = document.getElementById('signupEmail').value.trim();
+  const password = document.getElementById('signupPassword').value;
+  const errorEl = document.getElementById('signupError');
+  errorEl.textContent = '';
+  if (!companyName || !name || !email || !password) {
+    errorEl.textContent = 'All fields are required.';
+    return;
+  }
+  try {
+    const result = await apiPost('/auth/signup', { companyName, industry, name, email, password });
+    state.user = result.user;
+    state.company = result.company;
+    await enterApp();
+  } catch (e) {
+    errorEl.textContent = e.message || 'Could not create workspace.';
+  }
+}
+
+async function logout() {
+  try { await apiPost('/auth/logout'); } catch { /* ignore */ }
+  state.user = null;
+  state.company = null;
+  document.getElementById('appRoot').style.display = 'none';
+  document.getElementById('authScreen').style.display = 'flex';
+  showLogin();
+}
+
+async function enterApp() {
+  document.getElementById('authScreen').style.display = 'none';
+  document.getElementById('appRoot').style.display = 'flex';
+
+  document.getElementById('userAvatar').textContent = initials(state.user.name);
+  document.getElementById('userNameLabel').textContent = state.user.name;
+  document.getElementById('userRoleLabel').textContent = state.user.role;
+  document.getElementById('companyIndustryIcon').textContent = INDUSTRY_ICONS[state.company.industry] || '🏢';
+  document.getElementById('companyNameLabel').textContent = state.company.name;
+
+  await loadCompanyData();
+  renderSidebar();
+  renderDashboard();
+  renderPanel();
+  renderConversationList();
+}
+
 // ---------- Data loading ----------
-async function loadIndustryData() {
+async function loadCompanyData() {
   const [vendors, operations] = await Promise.all([
-    apiGet(`/vendors?industry=${state.industry}`),
-    apiGet(`/operations?industry=${state.industry}`)
+    apiGet('/vendors'),
+    apiGet('/operations')
   ]);
   state.vendors = vendors;
   state.operations = operations;
   state.messagesCache = {};
   state.documents = {};
-}
-
-async function switchIndustry(industry) {
-  state.industry = industry;
-  state.currentConversationVendor = null;
-  await loadIndustryData();
-  renderSidebar();
-  renderDashboard();
-  renderVendors();
-  renderOperations();
-  renderPanel();
-  renderConversationList();
-  document.getElementById('chatVendorName').textContent = 'Select a conversation';
-  document.getElementById('chatMessages').innerHTML = '';
 }
 
 function switchTab(tab) {
@@ -86,7 +175,7 @@ function switchTab(tab) {
   } else if (tab === 'vendors') {
     document.getElementById('vendorsView').classList.add('active');
     document.getElementById('headerTitle').textContent = 'Vendor Management';
-    document.getElementById('headerSubtitle').textContent = `${industryLabel()} Vendors`;
+    document.getElementById('headerSubtitle').textContent = `${state.company.name} Vendors`;
     renderVendors();
     renderPanel();
   } else if (tab === 'operations') {
@@ -101,16 +190,13 @@ function switchTab(tab) {
     document.getElementById('headerSubtitle').textContent = 'Vendor communication hub';
     renderConversationList();
     renderPanel();
+  } else if (tab === 'team') {
+    document.getElementById('teamView').classList.add('active');
+    document.getElementById('headerTitle').textContent = 'Team';
+    document.getElementById('headerSubtitle').textContent = `People with access to ${state.company.name}`;
+    renderTeam();
+    renderPanel();
   }
-}
-
-function industryLabel() {
-  const found = state.industries.find(i => i.key === state.industry);
-  return found ? found.name : state.industry;
-}
-
-function initials(id) {
-  return (id || '').toUpperCase().substring(0, 2);
 }
 
 // ---------- Rendering ----------
@@ -119,8 +205,8 @@ function renderSidebar() {
     <div class="list-item">
       <div class="list-item-avatar">${initials(v.id)}</div>
       <div class="list-item-info">
-        <div class="list-item-name">${v.name}</div>
-        <div class="list-item-meta">${v.type}</div>
+        <div class="list-item-name">${escapeHtml(v.name)}</div>
+        <div class="list-item-meta">${escapeHtml(v.type)}</div>
       </div>
       ${v.active > 0 ? `<div class="badge">${v.active}</div>` : ''}
     </div>
@@ -144,8 +230,8 @@ function renderVendors() {
       <div class="vendor-header">
         <div class="vendor-avatar">${initials(v.id)}</div>
         <div class="vendor-info">
-          <h3>${v.name}</h3>
-          <p>${v.type}</p>
+          <h3>${escapeHtml(v.name)}</h3>
+          <p>${escapeHtml(v.type)}</p>
         </div>
       </div>
       <div class="vendor-stats">
@@ -159,7 +245,7 @@ function renderVendors() {
         </div>
       </div>
       <div class="vendor-actions">
-        <button class="vendor-btn" onclick="switchTab('messaging'); document.querySelector('.nav-item:nth-child(4)').classList.add('active'); openConversation('${v.id}', '${escapeHtml(v.name)}')">Message</button>
+        <button class="vendor-btn" onclick="goToConversation('${v.id}', '${escapeHtml(v.name)}')">Message</button>
         <button class="vendor-btn" onclick="alert('${escapeHtml(v.name)}\\n${escapeHtml(v.type)}\\nRating: ${v.rating}\\nActive orders: ${v.active}')">Details</button>
       </div>
     </div>
@@ -170,6 +256,16 @@ function renderVendors() {
 function renderOperations() {
   document.getElementById('allOperations').innerHTML =
     state.operations.length ? state.operations.map(op => createActivityItem(op)).join('') : `<div class="empty-state">No operations yet</div>`;
+}
+
+function goToConversation(vendorId, vendorName) {
+  document.querySelectorAll('.nav-item').forEach(btn => btn.classList.remove('active'));
+  document.querySelectorAll('.nav-item')[3].classList.add('active'); // Messaging is the 4th nav item
+  document.querySelectorAll('.view').forEach(view => view.classList.remove('active'));
+  document.getElementById('messagingView').classList.add('active');
+  document.getElementById('headerTitle').textContent = 'Messaging';
+  document.getElementById('headerSubtitle').textContent = 'Vendor communication hub';
+  openConversation(vendorId, vendorName);
 }
 
 function renderConversationList() {
@@ -184,7 +280,7 @@ function renderConversationList() {
         <div class="conversation-list-item ${state.currentConversationVendor === vendor.id ? 'active' : ''}" onclick="openConversation('${vendor.id}', '${escapeHtml(vendor.name)}')">
           <div class="conversation-avatar-small">${initials(vendor.id)}</div>
           <div class="conversation-preview-info">
-            <div class="conversation-name-small">${vendor.name}</div>
+            <div class="conversation-name-small">${escapeHtml(vendor.name)}</div>
             <div class="conversation-preview-text">${escapeHtml(lastMsg)}</div>
           </div>
         </div>
@@ -198,7 +294,7 @@ async function openConversation(vendorId, vendorName) {
   document.getElementById('chatVendorName').textContent = vendorName;
 
   if (!state.messagesCache[vendorId]) {
-    state.messagesCache[vendorId] = await apiGet(`/messages?industry=${state.industry}&vendorId=${vendorId}`);
+    state.messagesCache[vendorId] = await apiGet(`/messages?vendorId=${vendorId}`);
   }
   renderChat(vendorId);
   renderConversationList();
@@ -229,13 +325,7 @@ async function sendMessage() {
   if (!msg || !state.currentConversationVendor) return;
 
   const vendorId = state.currentConversationVendor;
-  const saved = await apiPost('/messages', {
-    industry: state.industry,
-    vendorId,
-    msg,
-    sender: 'you',
-    fromName: 'You'
-  });
+  const saved = await apiPost('/messages', { vendorId, msg, sender: 'you' });
   state.messagesCache[vendorId] = state.messagesCache[vendorId] || [];
   state.messagesCache[vendorId].push(saved);
   input.value = '';
@@ -247,22 +337,22 @@ async function renderPanel() {
   let html = '';
   for (const vendor of state.vendors) {
     if (!state.messagesCache[vendor.id]) {
-      state.messagesCache[vendor.id] = await apiGet(`/messages?industry=${state.industry}&vendorId=${vendor.id}`);
+      state.messagesCache[vendor.id] = await apiGet(`/messages?vendorId=${vendor.id}`);
     }
     if (!state.documents[vendor.id]) {
-      state.documents[vendor.id] = await apiGet(`/documents?industry=${state.industry}&vendorId=${vendor.id}`);
+      state.documents[vendor.id] = await apiGet(`/documents?vendorId=${vendor.id}`);
     }
     const convList = state.messagesCache[vendor.id] || [];
     const docList = state.documents[vendor.id] || [];
 
     html += `
       <div style="margin-bottom: 24px;">
-        <div style="font-size: 12px; font-weight: 700; color: var(--text-tertiary); text-transform: uppercase; margin-bottom: 12px;">${vendor.name}</div>
+        <div style="font-size: 12px; font-weight: 700; color: var(--text-tertiary); text-transform: uppercase; margin-bottom: 12px;">${escapeHtml(vendor.name)}</div>
 
         ${convList.length > 0 ? `
           <div style="margin-bottom: 12px;">
             ${convList.slice(-2).map(c => `
-              <div class="conversation-item" onclick="switchTab('messaging'); document.querySelector('.nav-item:nth-child(4)').classList.add('active'); openConversation('${vendor.id}', '${escapeHtml(vendor.name)}')">
+              <div class="conversation-item" onclick="goToConversation('${vendor.id}', '${escapeHtml(vendor.name)}')">
                 <div class="avatar">${initials(vendor.id)}</div>
                 <div class="conversation-info">
                   <div class="conversation-name" style="font-size: 12px;">${escapeHtml(c.from_name)}</div>
@@ -280,7 +370,7 @@ async function renderPanel() {
                 <div class="doc-icon"><i class="ti ti-file"></i></div>
                 <div class="doc-info">
                   <div class="doc-name">${escapeHtml(doc.name)}</div>
-                  <div class="doc-meta">${doc.size || ''} • ${formatTime(doc.created_at)}</div>
+                  <div class="doc-meta">${escapeHtml(doc.size || '')} • ${formatTime(doc.created_at)}</div>
                 </div>
               </div>
             `).join('')}
@@ -330,12 +420,16 @@ function createActivityItem(op) {
 }
 
 async function quickApprove(opId) {
-  await updateOperationStatus(opId, 'approved');
-  showToast('Approved');
+  try {
+    await updateOperationStatus(opId, 'approved');
+    showToast('Approved');
+  } catch (e) {
+    showToast(e.message || 'Could not approve');
+  }
 }
 
 async function updateOperationStatus(opId, status) {
-  const updated = await apiPatch(`/operations/${state.industry}/${opId}`, { status });
+  const updated = await apiPatch(`/operations/${opId}`, { status });
   const idx = state.operations.findIndex(o => o.id === opId);
   if (idx !== -1) state.operations[idx] = updated;
   renderDashboard();
@@ -386,8 +480,16 @@ function openModal(opId) {
   `;
 
   document.getElementById('modalBody').innerHTML = fieldsHtml;
-  document.getElementById('modalAction').textContent = op.status === 'pending' ? 'Approve & Proceed' : 'Mark Complete';
-  document.getElementById('modalAction').style.display = (op.status === 'completed') ? 'none' : '';
+  const canApprove = op.status === 'pending' && state.user.role === 'admin';
+  const actionBtn = document.getElementById('modalAction');
+  if (op.status === 'completed') {
+    actionBtn.style.display = 'none';
+  } else if (op.status === 'pending' && state.user.role !== 'admin') {
+    actionBtn.style.display = 'none';
+  } else {
+    actionBtn.style.display = '';
+    actionBtn.textContent = op.status === 'pending' ? 'Approve & Proceed' : 'Mark Complete';
+  }
   document.getElementById('detailModal').classList.add('active');
 }
 
@@ -399,9 +501,13 @@ async function performAction() {
   if (!state.currentModalOp) return;
   const op = state.currentModalOp;
   const nextStatus = op.status === 'pending' ? 'approved' : 'completed';
-  await updateOperationStatus(op.id, nextStatus);
-  showToast(`${op.title} marked ${nextStatus}`);
-  closeModal();
+  try {
+    await updateOperationStatus(op.id, nextStatus);
+    showToast(`${op.title} marked ${nextStatus}`);
+    closeModal();
+  } catch (e) {
+    showToast(e.message || 'Action failed');
+  }
 }
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -444,13 +550,7 @@ async function submitNewOperation() {
   }
 
   const created = await apiPost('/operations', {
-    industry: state.industry,
-    type,
-    title,
-    vendor: vendor.name,
-    vendor_id: vendor.id,
-    amount,
-    desc
+    type, title, vendor: vendor.name, vendor_id: vendor.id, amount, desc
   });
   state.operations.unshift(created);
   renderDashboard();
@@ -483,7 +583,7 @@ async function submitNewVendor() {
     return;
   }
 
-  const created = await apiPost('/vendors', { industry: state.industry, name, type, rating, active });
+  const created = await apiPost('/vendors', { name, type, rating, active });
   state.vendors.push(created);
   renderSidebar();
   renderVendors();
@@ -492,35 +592,63 @@ async function submitNewVendor() {
   showToast('Vendor added');
 }
 
-// ---------- Utilities ----------
-function escapeHtml(str) {
-  if (str === null || str === undefined) return '';
-  return String(str)
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#39;');
+// ---------- Team ----------
+async function renderTeam() {
+  state.teammates = await apiGet('/users');
+  const html = state.teammates.map(u => `
+    <div class="team-member-item">
+      <div class="user-avatar">${initials(u.name)}</div>
+      <div class="team-member-info">
+        <div class="team-member-name">${escapeHtml(u.name)} ${u.id === state.user.id ? '(you)' : ''}</div>
+        <div class="team-member-email">${escapeHtml(u.email)}</div>
+      </div>
+      <span class="role-badge ${u.role}">${u.role}</span>
+    </div>
+  `).join('');
+  document.getElementById('teamList').innerHTML = html || `<div class="empty-state">No teammates yet</div>`;
+
+  const addSection = document.getElementById('addTeammateSection');
+  addSection.style.display = state.user.role === 'admin' ? '' : 'none';
 }
 
-function formatTime(iso) {
-  if (!iso) return '';
+async function addTeammate() {
+  const name = document.getElementById('teamNewName').value.trim();
+  const email = document.getElementById('teamNewEmail').value.trim();
+  const password = document.getElementById('teamNewPassword').value;
+  const role = document.getElementById('teamNewRole').value;
+  const errorEl = document.getElementById('teamAddError');
+  errorEl.textContent = '';
+
+  if (!name || !email || !password) {
+    errorEl.textContent = 'Name, email and password are required.';
+    return;
+  }
+
   try {
-    const d = new Date(iso.replace(' ', 'T') + 'Z');
-    return d.toLocaleString(undefined, { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' });
-  } catch {
-    return iso;
+    await apiPost('/users', { name, email, password, role });
+    document.getElementById('teamNewName').value = '';
+    document.getElementById('teamNewEmail').value = '';
+    document.getElementById('teamNewPassword').value = '';
+    document.getElementById('teamNewRole').value = 'member';
+    showToast('Teammate added');
+    renderTeam();
+  } catch (e) {
+    errorEl.textContent = e.message || 'Could not add teammate.';
   }
 }
 
 // ---------- Init ----------
 async function init() {
-  state.industries = await apiGet('/industries');
-  await loadIndustryData();
-  renderSidebar();
-  renderDashboard();
-  renderPanel();
-  renderConversationList();
+  try {
+    const me = await apiGet('/auth/me');
+    state.user = me.user;
+    state.company = me.company;
+    await enterApp();
+  } catch {
+    document.getElementById('authScreen').style.display = 'flex';
+    document.getElementById('appRoot').style.display = 'none';
+    showLogin();
+  }
 }
 
 init();

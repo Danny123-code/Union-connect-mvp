@@ -1085,10 +1085,242 @@
         ::-webkit-scrollbar-thumb:hover {
             background: var(--border-hover);
         }
+
+        /* Company badge (replaces the old industry switcher) */
+        .company-badge {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 10px;
+            background: var(--bg-secondary);
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        /* Sidebar footer: current user + logout */
+        .sidebar-footer {
+            padding: 12px;
+            border-top: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex: 1;
+            min-width: 0;
+        }
+
+        .user-avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 6px;
+            background: linear-gradient(135deg, var(--primary), var(--primary-light));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 11px;
+            font-weight: 700;
+            flex-shrink: 0;
+        }
+
+        .user-info-text {
+            min-width: 0;
+        }
+
+        .user-name {
+            font-size: 12px;
+            font-weight: 600;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .user-role {
+            font-size: 11px;
+            color: var(--text-tertiary);
+            text-transform: capitalize;
+        }
+
+        .logout-btn {
+            width: 32px;
+            height: 32px;
+            border-radius: 6px;
+            border: 1px solid var(--border);
+            background: transparent;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            color: var(--text-secondary);
+            transition: all 0.2s;
+            flex-shrink: 0;
+        }
+
+        .logout-btn:hover {
+            background: var(--bg-secondary);
+            color: var(--red);
+        }
+
+        /* Auth screen */
+        .auth-screen {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            background: var(--bg-tertiary);
+        }
+
+        .auth-card {
+            background: var(--bg-primary);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 32px;
+            width: 100%;
+            max-width: 380px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.08);
+        }
+
+        .auth-error {
+            color: var(--red);
+            font-size: 12px;
+            margin-top: 10px;
+            min-height: 14px;
+        }
+
+        .auth-toggle {
+            font-size: 12px;
+            color: var(--text-secondary);
+            margin-top: 18px;
+            text-align: center;
+        }
+
+        .auth-toggle a {
+            color: var(--accent);
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: underline;
+        }
+
+        /* Team view */
+        .team-member-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            background: var(--bg-primary);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 14px 16px;
+            margin-bottom: 10px;
+        }
+
+        .team-member-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .team-member-name {
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        .team-member-email {
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+
+        .role-badge {
+            padding: 3px 9px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+
+        .role-badge.admin {
+            background: rgba(83, 74, 183, 0.1);
+            color: var(--accent);
+        }
+
+        .role-badge.member {
+            background: rgba(0,0,0,0.06);
+            color: var(--text-secondary);
+        }
     </style>
 </head>
 <body>
-    <div class="app">
+    <!-- Auth Screen -->
+    <div class="auth-screen" id="authScreen">
+        <div class="auth-card">
+            <div class="logo-section" style="justify-content: center; margin-bottom: 4px;">
+                <div class="logo-icon">⬚</div>
+                <div class="logo-text">
+                    <div class="logo-main">UNION</div>
+                    <div class="logo-sub">CONNECT</div>
+                </div>
+            </div>
+            <div class="tagline" style="text-align: center; margin-bottom: 24px;">Vendor Operations Platform</div>
+
+            <!-- Login form -->
+            <div id="loginForm">
+                <h2 style="font-size: 16px; margin-bottom: 16px;">Log in</h2>
+                <div class="form-group">
+                    <label class="form-label">Email</label>
+                    <input class="form-input" id="loginEmail" type="email" placeholder="name@company.com">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Password</label>
+                    <input class="form-input" id="loginPassword" type="password" placeholder="Your password" onkeydown="if(event.key==='Enter') login()">
+                </div>
+                <button class="btn-primary" style="width: 100%; justify-content: center;" onclick="login()">Log in</button>
+                <div class="auth-error" id="loginError"></div>
+                <div class="auth-toggle">Don't have a company workspace yet? <a onclick="showSignup()">Create one</a></div>
+            </div>
+
+            <!-- Signup form -->
+            <div id="signupForm" style="display: none;">
+                <h2 style="font-size: 16px; margin-bottom: 16px;">Create your company workspace</h2>
+                <div class="form-group">
+                    <label class="form-label">Company Name</label>
+                    <input class="form-input" id="signupCompanyName" placeholder="e.g. Acme Foods Inc">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Industry</label>
+                    <select class="form-select" id="signupIndustry">
+                        <option value="food">🍗 Food & Beverage</option>
+                        <option value="manufacturing">🏭 Manufacturing</option>
+                        <option value="logistics">🚚 Logistics</option>
+                        <option value="retail">🛍️ Retail</option>
+                        <option value="construction">🏗️ Construction</option>
+                        <option value="tech">💻 Technology</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Your Name</label>
+                    <input class="form-input" id="signupName" placeholder="Full name">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Email</label>
+                    <input class="form-input" id="signupEmail" type="email" placeholder="name@company.com">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Password</label>
+                    <input class="form-input" id="signupPassword" type="password" placeholder="At least 8 characters">
+                </div>
+                <button class="btn-primary" style="width: 100%; justify-content: center;" onclick="signup()">Create Workspace</button>
+                <div class="auth-error" id="signupError"></div>
+                <div class="auth-toggle">Already have an account? <a onclick="showLogin()">Log in</a></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="app" id="appRoot" style="display: none;">
         <!-- Sidebar -->
         <div class="sidebar">
             <div class="sidebar-header">
@@ -1101,14 +1333,10 @@
                 </div>
                 <div class="tagline">Vendor Operations Platform</div>
 
-                <select class="industry-selector" id="industrySelector" onchange="switchIndustry(this.value)">
-                    <option value="food">🍗 Food & Beverage</option>
-                    <option value="manufacturing">🏭 Manufacturing</option>
-                    <option value="logistics">🚚 Logistics</option>
-                    <option value="retail">🛍️ Retail</option>
-                    <option value="construction">🏗️ Construction</option>
-                    <option value="tech">💻 Technology</option>
-                </select>
+                <div class="company-badge">
+                    <span id="companyIndustryIcon">🏢</span>
+                    <span id="companyNameLabel">Your Company</span>
+                </div>
             </div>
 
             <div class="sidebar-nav">
@@ -1124,6 +1352,9 @@
                 <button class="nav-item" onclick="switchTab('messaging')">
                     <i class="ti ti-message-circle"></i> Messaging
                 </button>
+                <button class="nav-item" onclick="switchTab('team')">
+                    <i class="ti ti-users-group"></i> Team
+                </button>
             </div>
 
             <div class="sidebar-list">
@@ -1131,6 +1362,17 @@
                     <div class="list-header">Active Vendors</div>
                     <div id="vendorsList"></div>
                 </div>
+            </div>
+
+            <div class="sidebar-footer">
+                <div class="user-info">
+                    <div class="user-avatar" id="userAvatar">--</div>
+                    <div class="user-info-text">
+                        <div class="user-name" id="userNameLabel">--</div>
+                        <div class="user-role" id="userRoleLabel">--</div>
+                    </div>
+                </div>
+                <button class="logout-btn" onclick="logout()" title="Log out"><i class="ti ti-logout"></i></button>
             </div>
         </div>
 
@@ -1218,6 +1460,48 @@
                                     <input type="text" class="chat-input" id="chatInput" placeholder="Type a message..." onkeydown="if(event.key==='Enter') sendMessage()">
                                     <button class="chat-send-btn" onclick="sendMessage()">Send</button>
                                 </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Team View -->
+                <div class="view" id="teamView">
+                    <div class="dashboard">
+                        <div class="section">
+                            <div class="section-title">
+                                <i class="ti ti-users-group"></i>
+                                Team Members
+                            </div>
+                            <div id="teamList"></div>
+                        </div>
+                        <div class="section" id="addTeammateSection" style="display: none;">
+                            <div class="section-title">
+                                <i class="ti ti-user-plus"></i>
+                                Add a Teammate
+                            </div>
+                            <div style="background: var(--bg-primary); border: 1px solid var(--border); border-radius: 8px; padding: 20px; max-width: 420px;">
+                                <div class="form-group">
+                                    <label class="form-label">Name</label>
+                                    <input class="form-input" id="teamNewName" placeholder="Full name">
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">Email</label>
+                                    <input class="form-input" id="teamNewEmail" type="email" placeholder="name@company.com">
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">Temporary Password</label>
+                                    <input class="form-input" id="teamNewPassword" type="password" placeholder="At least 8 characters">
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">Role</label>
+                                    <select class="form-select" id="teamNewRole">
+                                        <option value="member">Member</option>
+                                        <option value="admin">Admin</option>
+                                    </select>
+                                </div>
+                                <button class="btn-primary" onclick="addTeammate()">Add Teammate</button>
+                                <div id="teamAddError" style="color: var(--red); font-size: 12px; margin-top: 10px;"></div>
                             </div>
                         </div>
                     </div>
