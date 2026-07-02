@@ -1,26 +1,96 @@
 const path = require('path');
+const fs = require('fs');
 const express = require('express');
 const cors = require('cors');
+const multer = require('multer');
 const { customAlphabet } = require('nanoid');
 const db = require('./db');
 const auth = require('./auth');
+const email = require('./email');
 
 db.init();
 
 const nanoid = customAlphabet('abcdefghijklmnopqrstuvwxyz0123456789', 8);
 
 const app = express();
+app.set('trust proxy', 1); // needed so req.ip is the real client IP behind Railway/Render's proxy
 app.use(cors({ origin: true, credentials: true }));
 app.use(express.json());
 
 const INDUSTRIES = [
-  { key: 'food', name: '🍗 Food & Beverage' },
-  { key: 'manufacturing', name: '🏭 Manufacturing' },
-  { key: 'logistics', name: '🚚 Logistics' },
-  { key: 'retail', name: '🛍️ Retail' },
-  { key: 'construction', name: '🏗️ Construction' },
-  { key: 'tech', name: '💻 Technology' }
+  { key: 'food', name: 'Food & Beverage' },
+  { key: 'manufacturing', name: 'Manufacturing' },
+  { key: 'logistics', name: 'Logistics & Transportation' },
+  { key: 'retail', name: 'Retail' },
+  { key: 'construction', name: 'Construction' },
+  { key: 'tech', name: 'Technology' },
+  { key: 'healthcare', name: 'Healthcare' },
+  { key: 'hospitality', name: 'Hospitality & Food Service' },
+  { key: 'professional-services', name: 'Professional Services' },
+  { key: 'real-estate', name: 'Real Estate' },
+  { key: 'agriculture', name: 'Agriculture' },
+  { key: 'education', name: 'Education' },
+  { key: 'energy', name: 'Energy & Utilities' },
+  { key: 'finance', name: 'Financial Services' },
+  { key: 'nonprofit', name: 'Nonprofit' },
+  { key: 'automotive', name: 'Automotive' },
+  { key: 'other', name: 'Other' }
 ];
+
+// ---------------------------------------------------------------------
+// Rate limiting (in-memory, per-IP, no new dependency)
+// ---------------------------------------------------------------------
+const RATE_LIMIT_WINDOW_MS = 15 * 60 * 1000; // 15 minutes
+const RATE_LIMIT_MAX = 10; // 10 attempts per window per IP
+const rateLimitStore = new Map();
+
+function rateLimit(req, res, next) {
+  const ip = req.ip || (req.connection && req.connection.remoteAddress) || 'unknown';
+  const now = Date.now();
+  let entry = rateLimitStore.get(ip);
+  if (!entry || now - entry.windowStart > RATE_LIMIT_WINDOW_MS) {
+    entry = { count: 0, windowStart: now };
+    rateLimitStore.set(ip, entry);
+  }
+  entry.count++;
+  if (entry.count > RATE_LIMIT_MAX) {
+    const retryMinutes = Math.ceil((RATE_LIMIT_WINDOW_MS - (now - entry.windowStart)) / 60000);
+    return res.status(429).json({ error: `Too many attempts. Please try again in about ${retryMinutes} minute${retryMinutes === 1 ? '' : 's'}.` });
+  }
+  next();
+}
+
+setInterval(() => {
+  const now = Date.now();
+  for (const [ip, entry] of rateLimitStore.entries()) {
+    if (now - entry.windowStart > RATE_LIMIT_WINDOW_MS) rateLimitStore.delete(ip);
+  }
+}, RATE_LIMIT_WINDOW_MS).unref();
+
+// ---------------------------------------------------------------------
+// File uploads (multer, disk storage on the same volume as the DB)
+// ---------------------------------------------------------------------
+const UPLOAD_DIR = process.env.UPLOAD_DIR || path.join(path.dirname(process.env.DB_PATH || path.join(__dirname, '..', 'data', 'union-connect.json')), 'uploads');
+fs.mkdirSync(UPLOAD_DIR, { recursive: true });
+
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    const dir = path.join(UPLOAD_DIR, req.company.id);
+    fs.mkdirSync(dir, { recursive: true });
+    cb(null, dir);
+  },
+  filename: (req, file, cb) => {
+    const safeName = file.originalname.replace(/[^a-zA-Z0-9._-]/g, '_').slice(-100);
+    cb(null, `${Date.now()}-${nanoid()}-${safeName}`);
+  }
+});
+const upload = multer({ storage, limits: { fileSize: 20 * 1024 * 1024 } }); // 20MB per file
+
+function formatBytes(bytes) {
+  if (bytes < 1024) return `${bytes} B`;
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+  return `${(bytes / 1024 / 1024).toFixed(1)} MB`;
+}
 
 // ---------------------------------------------------------------------
 // Auth middleware
@@ -54,15 +124,22 @@ function publicUser(user) {
 }
 
 // ---------------------------------------------------------------------
+// Config (support contact, etc.)
+// ---------------------------------------------------------------------
+app.get('/api/config', (req, res) => {
+  res.json({ supportEmail: email.SUPPORT_EMAIL });
+});
+
+// ---------------------------------------------------------------------
 // Auth routes
 // ---------------------------------------------------------------------
 app.get('/api/industries', (req, res) => {
   res.json(INDUSTRIES);
 });
 
-app.post('/api/auth/signup', (req, res) => {
-  const { companyName, industry, name, email, password } = req.body;
-  if (!companyName || !industry || !name || !email || !password) {
+app.post('/api/auth/signup', rateLimit, (req, res) => {
+  const { companyName, industry, name, email: emailAddr, password } = req.body;
+  if (!companyName || !industry || !name || !emailAddr || !password) {
     return res.status(400).json({ error: 'companyName, industry, name, email and password are all required' });
   }
   if (password.length < 8) {
@@ -71,7 +148,7 @@ app.post('/api/auth/signup', (req, res) => {
   if (!INDUSTRIES.some(i => i.key === industry)) {
     return res.status(400).json({ error: 'unknown industry' });
   }
-  if (db.findUserByEmail(email)) {
+  if (db.findUserByEmail(emailAddr)) {
     return res.status(409).json({ error: 'an account with that email already exists' });
   }
 
@@ -83,7 +160,7 @@ app.post('/api/auth/signup', (req, res) => {
   const user = db.createUser({
     id: userId,
     company_id: companyId,
-    email,
+    email: emailAddr,
     password_hash: auth.hashPassword(password),
     name,
     role: 'admin' // first user of a new company is its admin
@@ -98,14 +175,21 @@ app.post('/api/auth/signup', (req, res) => {
   });
   auth.setSessionCookie(res, token);
 
+  // Fire-and-forget: don't make signup wait on an external email API.
+  email.sendEmail({
+    to: user.email,
+    subject: `Welcome to Union Connect, ${user.name}`,
+    html: email.welcomeEmail({ name: user.name, companyName })
+  }).catch(e => console.error('welcome email failed:', e.message));
+
   res.status(201).json({ user: publicUser(user), company: db.getCompany(companyId) });
 });
 
-app.post('/api/auth/login', (req, res) => {
-  const { email, password } = req.body;
-  if (!email || !password) return res.status(400).json({ error: 'email and password are required' });
+app.post('/api/auth/login', rateLimit, (req, res) => {
+  const { email: emailAddr, password } = req.body;
+  if (!emailAddr || !password) return res.status(400).json({ error: 'email and password are required' });
 
-  const user = db.findUserByEmail(email);
+  const user = db.findUserByEmail(emailAddr);
   if (!user || !auth.verifyPassword(password, user.password_hash)) {
     return res.status(401).json({ error: 'invalid email or password' });
   }
@@ -133,6 +217,48 @@ app.get('/api/auth/me', requireAuth, (req, res) => {
   res.json({ user: publicUser(req.user), company: req.company });
 });
 
+app.post('/api/auth/forgot-password', rateLimit, (req, res) => {
+  const { email: emailAddr } = req.body;
+  if (!emailAddr) return res.status(400).json({ error: 'email is required' });
+
+  const user = db.findUserByEmail(emailAddr);
+  // Always respond the same way whether or not the account exists, so this
+  // endpoint can't be used to check which emails have accounts.
+  if (user) {
+    const token = auth.generateToken();
+    db.createPasswordReset({
+      token,
+      user_id: user.id,
+      expires_at: new Date(Date.now() + 60 * 60 * 1000).toISOString() // 1 hour
+    });
+    const origin = `${req.protocol}://${req.get('host')}`;
+    const resetUrl = `${origin}/?resetToken=${token}`;
+    if (!process.env.RESEND_API_KEY) {
+      console.log(`[password reset link - no RESEND_API_KEY set] ${resetUrl}`);
+    }
+    email.sendEmail({
+      to: user.email,
+      subject: 'Reset your Union Connect password',
+      html: email.resetEmail({ name: user.name, resetUrl })
+    }).catch(e => console.error('reset email failed:', e.message));
+  }
+  res.json({ ok: true, message: 'If that email has an account, a reset link has been sent.' });
+});
+
+app.post('/api/auth/reset-password', rateLimit, (req, res) => {
+  const { token, password } = req.body;
+  if (!token || !password) return res.status(400).json({ error: 'token and password are required' });
+  if (password.length < 8) return res.status(400).json({ error: 'password must be at least 8 characters' });
+
+  const reset = db.getPasswordReset(token);
+  if (!reset) return res.status(400).json({ error: 'this reset link is invalid or has expired' });
+
+  db.updateUserPassword(reset.user_id, auth.hashPassword(password));
+  db.deletePasswordReset(token);
+  db.deleteSessionsForUser(reset.user_id); // log out everywhere for safety
+  res.json({ ok: true });
+});
+
 // ---------------------------------------------------------------------
 // Team management (company-scoped, admin-only to add teammates)
 // ---------------------------------------------------------------------
@@ -141,20 +267,20 @@ app.get('/api/users', requireAuth, (req, res) => {
 });
 
 app.post('/api/users', requireAuth, requireAdmin, (req, res) => {
-  const { name, email, password, role } = req.body;
-  if (!name || !email || !password) {
+  const { name, email: emailAddr, password, role } = req.body;
+  if (!name || !emailAddr || !password) {
     return res.status(400).json({ error: 'name, email and password are required' });
   }
   if (password.length < 8) {
     return res.status(400).json({ error: 'password must be at least 8 characters' });
   }
-  if (db.findUserByEmail(email)) {
+  if (db.findUserByEmail(emailAddr)) {
     return res.status(409).json({ error: 'an account with that email already exists' });
   }
   const user = db.createUser({
     id: auth.generateId(),
     company_id: req.company.id,
-    email,
+    email: emailAddr,
     password_hash: auth.hashPassword(password),
     name,
     role: role === 'admin' ? 'admin' : 'member'
@@ -249,6 +375,7 @@ app.get('/api/documents', requireAuth, (req, res) => {
   res.json(db.listDocuments(req.company.id, vendorId));
 });
 
+// Metadata-only creation, kept for backwards compatibility.
 app.post('/api/documents', requireAuth, (req, res) => {
   const { vendorId, name, size } = req.body;
   if (!vendorId || !name) {
@@ -256,6 +383,35 @@ app.post('/api/documents', requireAuth, (req, res) => {
   }
   const row = db.insertDocument({ company_id: req.company.id, vendor_id: vendorId, name, size });
   res.status(201).json(row);
+});
+
+// Real file upload — multipart/form-data with fields "file" and "vendorId".
+app.post('/api/documents/upload', requireAuth, upload.single('file'), (req, res) => {
+  if (!req.file) return res.status(400).json({ error: 'file is required' });
+  const { vendorId } = req.body;
+  if (!vendorId) return res.status(400).json({ error: 'vendorId is required' });
+
+  const row = db.insertDocument({
+    company_id: req.company.id,
+    vendor_id: vendorId,
+    name: req.file.originalname,
+    size: formatBytes(req.file.size),
+    file_path: path.relative(UPLOAD_DIR, req.file.path),
+    mime_type: req.file.mimetype
+  });
+  res.status(201).json(row);
+});
+
+app.get('/api/documents/:id/download', requireAuth, (req, res) => {
+  const doc = db.getDocument(req.company.id, req.params.id);
+  if (!doc) return res.status(404).json({ error: 'document not found' });
+  if (!doc.file_path) return res.status(404).json({ error: 'this document has no uploaded file' });
+
+  const fullPath = path.join(UPLOAD_DIR, doc.file_path);
+  if (!fullPath.startsWith(UPLOAD_DIR)) return res.status(400).json({ error: 'invalid path' });
+  if (!fs.existsSync(fullPath)) return res.status(404).json({ error: 'file no longer exists on disk' });
+
+  res.download(fullPath, doc.name);
 });
 
 // ---------------------------------------------------------------------
@@ -279,6 +435,20 @@ app.use(express.static(path.join(__dirname, '..', 'public')));
 app.get('*', (req, res, next) => {
   if (req.path.startsWith('/api/')) return next();
   res.sendFile(path.join(__dirname, '..', 'public', 'index.html'));
+});
+
+// ---------------------------------------------------------------------
+// Error handler (must be last) — catches multer errors (file too large, etc.)
+// ---------------------------------------------------------------------
+app.use((err, req, res, next) => {
+  if (err instanceof multer.MulterError) {
+    return res.status(400).json({ error: err.message });
+  }
+  if (err) {
+    console.error(err);
+    return res.status(500).json({ error: 'server error' });
+  }
+  next();
 });
 
 const PORT = process.env.PORT || 3000;

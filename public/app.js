@@ -66,18 +66,33 @@ function formatTime(iso) {
   }
 }
 
-const INDUSTRY_ICONS = {
-  food: '🍗', manufacturing: '🏭', logistics: '🚚', retail: '🛍️', construction: '🏗️', tech: '💻'
-};
-
 // ---------- Auth screen ----------
-function showLogin() {
-  document.getElementById('loginForm').style.display = '';
+function hideAllAuthForms() {
+  document.getElementById('loginForm').style.display = 'none';
+  document.getElementById('forgotForm').style.display = 'none';
+  document.getElementById('resetForm').style.display = 'none';
   document.getElementById('signupForm').style.display = 'none';
 }
 
+function showLogin() {
+  hideAllAuthForms();
+  document.getElementById('loginForm').style.display = '';
+}
+
+function showForgot() {
+  hideAllAuthForms();
+  document.getElementById('forgotForm').style.display = '';
+  document.getElementById('forgotError').textContent = '';
+  document.getElementById('forgotSuccess').style.display = 'none';
+}
+
+function showResetForm() {
+  hideAllAuthForms();
+  document.getElementById('resetForm').style.display = '';
+}
+
 function showSignup() {
-  document.getElementById('loginForm').style.display = 'none';
+  hideAllAuthForms();
   document.getElementById('signupForm').style.display = '';
 }
 
@@ -131,6 +146,46 @@ async function logout() {
   showLogin();
 }
 
+// ---------- Password reset ----------
+let pendingResetToken = null;
+
+async function requestPasswordReset() {
+  const email = document.getElementById('forgotEmail').value.trim();
+  const errorEl = document.getElementById('forgotError');
+  const successEl = document.getElementById('forgotSuccess');
+  errorEl.textContent = '';
+  successEl.style.display = 'none';
+  if (!email) {
+    errorEl.textContent = 'Enter your email.';
+    return;
+  }
+  try {
+    const result = await apiPost('/auth/forgot-password', { email });
+    successEl.textContent = result.message || 'If that email has an account, a reset link has been sent.';
+    successEl.style.display = '';
+  } catch (e) {
+    errorEl.textContent = e.message || 'Something went wrong.';
+  }
+}
+
+async function submitPasswordReset() {
+  const password = document.getElementById('resetPassword').value;
+  const errorEl = document.getElementById('resetError');
+  errorEl.textContent = '';
+  if (!password || password.length < 8) {
+    errorEl.textContent = 'Password must be at least 8 characters.';
+    return;
+  }
+  try {
+    await apiPost('/auth/reset-password', { token: pendingResetToken, password });
+    showToast('Password updated. Please log in.');
+    window.history.replaceState({}, '', '/');
+    showLogin();
+  } catch (e) {
+    errorEl.textContent = e.message || 'This reset link is invalid or has expired.';
+  }
+}
+
 async function enterApp() {
   document.getElementById('authScreen').style.display = 'none';
   document.getElementById('appRoot').style.display = 'flex';
@@ -138,7 +193,6 @@ async function enterApp() {
   document.getElementById('userAvatar').textContent = initials(state.user.name);
   document.getElementById('userNameLabel').textContent = state.user.name;
   document.getElementById('userRoleLabel').textContent = state.user.role;
-  document.getElementById('companyIndustryIcon').textContent = INDUSTRY_ICONS[state.company.industry] || '🏢';
   document.getElementById('companyNameLabel').textContent = state.company.name;
 
   await loadCompanyData();
@@ -366,7 +420,7 @@ async function renderPanel() {
         ${docList.length > 0 ? `
           <div>
             ${docList.slice(0, 2).map(doc => `
-              <div class="doc-item">
+              <div class="doc-item" onclick="${doc.file_path ? `downloadDocument(${doc.id})` : `showToast('No file uploaded for this document')`}" title="${doc.file_path ? 'Click to download' : 'Metadata only, no file uploaded'}">
                 <div class="doc-icon"><i class="ti ti-file"></i></div>
                 <div class="doc-info">
                   <div class="doc-name">${escapeHtml(doc.name)}</div>
@@ -377,6 +431,8 @@ async function renderPanel() {
           </div>
         ` : ''}
 
+        <button class="vendor-btn" style="width: 100%; margin-top: 4px;" onclick="triggerUpload('${vendor.id}')"><i class="ti ti-upload"></i> Upload document</button>
+
         <hr style="border: none; border-top: 1px solid var(--border); margin: 16px 0;">
       </div>
     `;
@@ -384,6 +440,43 @@ async function renderPanel() {
 
   document.getElementById('panelContent').innerHTML = html || `<div class="empty-state">No vendors yet</div>`;
   document.getElementById('panelTitle').textContent = `Connected Vendors (${state.vendors.length})`;
+}
+
+let uploadTargetVendorId = null;
+
+function triggerUpload(vendorId) {
+  uploadTargetVendorId = vendorId;
+  const input = document.getElementById('uploadFileInput');
+  input.value = '';
+  input.click();
+}
+
+async function handleFileSelected(event) {
+  const file = event.target.files[0];
+  if (!file || !uploadTargetVendorId) return;
+  const formData = new FormData();
+  formData.append('file', file);
+  formData.append('vendorId', uploadTargetVendorId);
+  try {
+    const res = await fetch(`${API}/documents/upload`, {
+      method: 'POST',
+      body: formData,
+      credentials: 'include'
+    });
+    let data = null;
+    try { data = await res.json(); } catch { /* no body */ }
+    if (!res.ok) throw new Error((data && data.error) || 'Upload failed');
+    state.documents[uploadTargetVendorId] = state.documents[uploadTargetVendorId] || [];
+    state.documents[uploadTargetVendorId].unshift(data);
+    renderPanel();
+    showToast('Document uploaded');
+  } catch (e) {
+    showToast(e.message || 'Upload failed');
+  }
+}
+
+function downloadDocument(docId) {
+  window.open(`${API}/documents/${docId}/download`, '_blank');
 }
 
 function createActivityItem(op) {
@@ -639,6 +732,15 @@ async function addTeammate() {
 
 // ---------- Init ----------
 async function init() {
+  const params = new URLSearchParams(window.location.search);
+  const resetToken = params.get('resetToken');
+  if (resetToken) {
+    pendingResetToken = resetToken;
+    document.getElementById('authScreen').style.display = 'flex';
+    document.getElementById('appRoot').style.display = 'none';
+    showResetForm();
+    return;
+  }
   try {
     const me = await apiGet('/auth/me');
     state.user = me.user;

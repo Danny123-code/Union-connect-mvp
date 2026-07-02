@@ -7,8 +7,8 @@
 //
 // Multi-tenant model: every company that signs up gets its own private
 // set of vendors/operations/messages/documents, scoped by company_id.
-// The six "industries" from the original demo are kept only as seed
-// templates used to populate a brand-new company's workspace at signup.
+// Industries are kept only as seed templates used to populate a
+// brand-new company's workspace at signup.
 
 const path = require('path');
 const fs = require('fs');
@@ -28,6 +28,7 @@ function emptyData() {
     messages: [],
     documents: [],
     activity_log: [],
+    password_resets: [],
     nextMessageId: 1,
     nextDocumentId: 1,
     nextActivityId: 1
@@ -38,10 +39,11 @@ function load() {
   if (fs.existsSync(DB_PATH)) {
     try {
       data = JSON.parse(fs.readFileSync(DB_PATH, 'utf8'));
-      // backfill fields for DBs created before auth existed
+      // backfill fields for DBs created before auth/reset/uploads existed
       if (!data.companies) data.companies = [];
       if (!data.users) data.users = [];
       if (!data.sessions) data.sessions = [];
+      if (!data.password_resets) data.password_resets = [];
       if (!data.nextActivityId) data.nextActivityId = (data.activity_log ? data.activity_log.length : 0) + 1;
       return;
     } catch (e) {
@@ -140,6 +142,8 @@ function seedCompanyWorkspace(companyId, industry, idFactory) {
         vendor_id: newVendorId,
         name: d.name,
         size: d.size,
+        file_path: null,
+        mime_type: null,
         created_at: nowIso()
       });
     }
@@ -187,6 +191,14 @@ function listUsersByCompany(companyId) {
     .map(u => ({ id: u.id, name: u.name, email: u.email, role: u.role, created_at: u.created_at }));
 }
 
+function updateUserPassword(userId, password_hash) {
+  const user = getUserById(userId);
+  if (!user) return null;
+  user.password_hash = password_hash;
+  persist();
+  return user;
+}
+
 // ---------------- Sessions ----------------
 function createSession({ token, user_id, company_id, expires_at }) {
   const row = { token, user_id, company_id, expires_at, created_at: nowIso() };
@@ -208,6 +220,32 @@ function deleteSession(token) {
   const before = data.sessions.length;
   data.sessions = data.sessions.filter(s => s.token !== token);
   if (data.sessions.length !== before) persist();
+}
+
+function deleteSessionsForUser(userId) {
+  const before = data.sessions.length;
+  data.sessions = data.sessions.filter(s => s.user_id !== userId);
+  if (data.sessions.length !== before) persist();
+}
+
+// ---------------- Password resets ----------------
+function createPasswordReset({ token, user_id, expires_at }) {
+  const row = { token, user_id, expires_at, created_at: nowIso() };
+  data.password_resets.push(row);
+  persist();
+  return row;
+}
+
+function getPasswordReset(token) {
+  const row = data.password_resets.find(r => r.token === token);
+  if (!row) return null;
+  if (new Date(row.expires_at).getTime() < Date.now()) return null;
+  return row;
+}
+
+function deletePasswordReset(token) {
+  data.password_resets = data.password_resets.filter(r => r.token !== token);
+  persist();
 }
 
 // ---------------- Vendors ----------------
@@ -283,8 +321,16 @@ function listDocuments(companyId, vendorId) {
   return rows.sort((a, b) => b.id - a.id);
 }
 
-function insertDocument({ company_id, vendor_id, name, size }) {
-  const row = { id: data.nextDocumentId++, company_id, vendor_id, name, size: size || '', created_at: nowIso() };
+function getDocument(companyId, id) {
+  return data.documents.find(d => d.company_id === companyId && d.id === Number(id)) || null;
+}
+
+function insertDocument({ company_id, vendor_id, name, size, file_path, mime_type }) {
+  const row = {
+    id: data.nextDocumentId++, company_id, vendor_id, name,
+    size: size || '', file_path: file_path || null, mime_type: mime_type || null,
+    created_at: nowIso()
+  };
   data.documents.push(row);
   persist();
   return row;
@@ -311,9 +357,14 @@ module.exports = {
   findUserByEmail,
   getUserById,
   listUsersByCompany,
+  updateUserPassword,
   createSession,
   getSession,
   deleteSession,
+  deleteSessionsForUser,
+  createPasswordReset,
+  getPasswordReset,
+  deletePasswordReset,
   listVendors,
   insertVendor,
   listOperations,
@@ -323,6 +374,7 @@ module.exports = {
   listMessages,
   insertMessage,
   listDocuments,
+  getDocument,
   insertDocument,
   logActivity,
   listActivity
